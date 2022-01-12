@@ -1,0 +1,9 @@
+-r requirements.in
+
+flake8
+mypy
+pytest==6.2.2
+pytest-django
+pytest-cov==2.11.1
+coverage
+freezegun==1.1.0

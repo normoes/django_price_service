@@ -1,0 +1,7 @@
+Django>=4.0
+djangorestframework>=3.13
+django-environ>=0.4.5
+celery>=3.3.1
+gunicorn[gevent]==20.1.0
+psycopg2-binary>=2.9.3
+requests>>=2.27.1

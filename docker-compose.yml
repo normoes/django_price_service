@@ -1,0 +1,121 @@
+---
+version: '3.9'
+
+services:
+  service:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+        DEBIAN_VERSION: "slim-buster"
+        USER_NAME: "user"
+        USER_ID: 1000
+        GROUP_ID: 1000
+        REQUIREMENTS: "requirements.txt"
+    command: bash -c "python manage.py runserver 0.0.0.0:8080"
+    ports:
+        - "127.0.0.1:8080:8080"
+    volumes:
+      - ./:/code
+    env_file:
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celery_worker:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+        DEBIAN_VERSION: "slim-buster"
+        USER_NAME: "user"
+        USER_ID: 1000
+        GROUP_ID: 1000
+        REQUIREMENTS: "requirements.txt"
+    command: celery -A price_service worker --loglevel=INFO -f /tmp/celery_worker.log
+    volumes:
+      - ./:/code
+    env_file:
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+        DEBIAN_VERSION: "slim-buster"
+        USER_NAME: "user"
+        USER_ID: 1000
+        GROUP_ID: 1000
+        REQUIREMENTS: "requirements.txt"
+    command: celery -A price_service beat --loglevel=INFO -s /tmp/celerybeat-schedule -f /tmp/celery_beat.log
+    volumes:
+      - ./:/code
+    env_file:
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  postgres:
+    image: "postgres:13.5-alpine3.15"
+    expose:
+        - 5432
+    ports:
+        - "127.0.0.1:5432:5432"
+    env_file:
+        - .env
+    volumes:
+       - "data-volume:/var/lib/postgresql/data"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  rabbitmq:
+    image: "rabbitmq:3.9.12-management-alpine"
+    expose:
+        - 5672
+        - 15672
+    hostname: rabbitmq
+    ports:
+        - "127.0.0.1:15672:15672"
+    env_file:
+        - .env
+    volumes:
+        - "rabbit-volume:/var/lib/rabbitmq/mnesia"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  update:
+    build:
+      context: .
+      dockerfile: ./deps.Dockerfile
+      args:
+        PYTHON_VERSION: "3.8"
+        DEBIAN_VERSION: "slim-buster"
+    command: bash -c "echo 'Not implemented yet.'"
+    volumes:
+      - ./:/code
+    env_file:
+      - .env
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  data-volume:
+  rabbit-volume:

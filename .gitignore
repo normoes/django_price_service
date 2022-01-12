@@ -1,0 +1,11 @@
+*.vim
+
+
+__pycache__/
+*.pyc
+
+
+.env
+
+test-reports/
+.coverage
